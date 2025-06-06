@@ -78,7 +78,7 @@ oxPIJZZ6UAXxIRs7IX+/QoOlcFMIqtUGUnct5ICD6Kdx4gmdnwat5a1izfmw1keo
     // JWT signing options
     const signOptions = {
       algorithm: 'RS256',
-      keyid: '20250528-f216',
+      keyid: '20250606-d92b',
     };
 
     let token;
