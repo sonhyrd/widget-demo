@@ -366,6 +366,17 @@ if (document.readyState === 'loading') {
 } else {
   loadPaulJobWidget()
 }
+
+// Logout function
+function logoutFromPaulJob() {
+  try {
+    // Clear the stored authentication token
+    window.HyrdWidgetManager?.clearToken()
+    console.log('Paul Job widget logout successful')
+  } catch (error) {
+    console.error('Error during Paul Job widget logout:', error)
+  }
+}
 ```
 
 ## Integration Steps
@@ -424,6 +435,54 @@ if (document.readyState === 'loading') {
    - Update `companySlug` in the script with your company slug from dashboard
    - Set the correct `apiEndpoint` URL for your backend
    - Provide current user's `email` and `userId` in the `currentUser` object
+
+### Step 4: User Logout Implementation
+
+To handle user logout, you need to clear the stored authentication token from the widget.
+
+#### Basic Logout Implementation
+
+```javascript
+function handleUserLogout() {
+  // Clear Paul Job widget authentication
+  logoutFromPaulJob()
+  
+  // Your application logout logic here
+  // e.g., redirect to login page, clear session, etc.
+}
+```
+
+#### Integration with Your Logout Flow
+
+```javascript
+// Example: Integration with existing logout button
+document.getElementById('logout-button').addEventListener('click', async () => {
+  try {
+    // Clear Paul Job widget first
+    logoutFromPaulJob()
+    
+    // Then handle your application logout
+    await handleAppLogout()
+    
+    // Redirect or refresh as needed
+    window.location.href = '/login'
+  } catch (error) {
+    console.error('Logout error:', error)
+  }
+})
+
+// Example: Integration with SPA router logout
+function onUserLogout() {
+  // Clear widget authentication
+  logoutFromPaulJob()
+  
+  // Clear application state
+  clearUserSession()
+  
+  // Navigate to login page
+  router.navigate('/login')
+}
+```
 
 
 ## Security Considerations
@@ -534,6 +593,7 @@ const currentUser = {
 - `HyrdWidget({ company: 'slug' })`: Initialize widget
 - `HyrdWidget({ method: 'loaded', callback: function })`: Handle loaded event
 - `HyrdWidgetManager.verifyToken(token)`: Verify JWT token
+- `HyrdWidgetManager.clearToken()`: Clear stored authentication token (logout)
 
 #### Functions
 
@@ -541,6 +601,7 @@ const currentUser = {
 - `loadPaulJobScript()`: Load the widget SDK script
 - `initializePaulJob()`: Initialize widget configuration
 - `authenticateUserWithPaulJob()`: Handle user authentication
+- `logoutFromPaulJob()`: Clear user authentication and logout
 
 ## Support
 
