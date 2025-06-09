@@ -287,46 +287,45 @@ const currentUser = {
   lastName: 'Doe'     // Optional
 }
 
-function loadPaulJobWidget() {
-  loadPaulJobScript()
-  initializePaulJob()
+async function loadPaulJobWidget() {
+  await loadPaulJobScript()
+  await initializePaulJob()
 }
 
 function loadPaulJobScript() {
-  const firstScript = document.getElementsByTagName('script')[0]
-  let scriptElement = document.getElementById('widget-paul-job-sdk')
+  return new Promise((resolve) => {
+    let scriptElement = document.getElementById('widget-hyrd-ai-sdk')
 
-  if (!scriptElement) {
+    if (scriptElement) {
+      resolve()
+      return
+    }
+
     scriptElement = document.createElement('script')
     scriptElement.type = 'text/javascript'
     scriptElement.async = true
     scriptElement.src = WIDGET_CONFIG.sdkUrl
-    scriptElement.id = 'widget-paul-job-sdk'
-    firstScript.parentNode.insertBefore(scriptElement, firstScript)
-  }
+    scriptElement.id = 'widget-hyrd-ai-sdk'
+    scriptElement.onload = () => resolve()
+
+    document.head.appendChild(scriptElement)
+  })
 }
 
-function initializePaulJob() {
-  // Initialize HyrdWidget if not exists
-  if (!window.HyrdWidget) {
-    window.HyrdWidget = function (callback) {
-      (window.HyrdWidget.readyQueue = window.HyrdWidget.readyQueue || []).push(callback)
-    }
-    window.HyrdWidget.readyQueue = []
-  }
-
-  // Initialize widget with company configuration
-  window.HyrdWidget({
-    company: WIDGET_CONFIG.companySlug
-  })
-
-  // Handle widget loaded event
-  window.HyrdWidget({
-    method: 'loaded',
-    callback: async () => {
+async function initializePaulJob() {
+  const config = {
+    company: WIDGET_CONFIG.companySlug,
+    onStartAutologin: async () => {
       await authenticateUserWithPaulJob()
     }
-  })
+  }
+
+  // Initialize widget
+  if (!window.HyrdWidget) {
+    window.HyrdWidget = { readyQueue: [config] }
+  } else {
+    window.HyrdWidget.startWidget(config)
+  }
 }
 
 async function authenticateUserWithPaulJob() {
@@ -352,7 +351,7 @@ async function authenticateUserWithPaulJob() {
     const data = await response.json()
 
     // Send token to widget for verification and auto-login
-    const result = await window.HyrdWidgetManager.verifyToken(data.token)
+    const result = await window.HyrdWidget.verifyToken(data.token)
     console.log('Widget authentication successful:', result)
 
   } catch (error) {
@@ -371,12 +370,26 @@ if (document.readyState === 'loading') {
 function logoutFromPaulJob() {
   try {
     // Clear the stored authentication token
-    window.HyrdWidgetManager?.clearToken()
+    window.HyrdWidget?.clearToken()
+    window.HyrdWidget?.destroy()
     console.log('Paul Job widget logout successful')
   } catch (error) {
     console.error('Error during Paul Job widget logout:', error)
   }
 }
+
+// Cleanup function (call on page unload or component unmount)
+function cleanupPaulJobWidget() {
+  try {
+    // Clear token and destroy widget instance
+    window.HyrdWidget?.clearToken()
+    window.HyrdWidget?.destroy()
+    console.log('Paul Job widget cleanup successful')
+  } catch (error) {
+    console.error('Error during Paul Job widget cleanup:', error)
+  }
+}
+
 ```
 
 ## Integration Steps
@@ -482,6 +495,11 @@ function onUserLogout() {
   // Navigate to login page
   router.navigate('/login')
 }
+
+// Example: Complete cleanup on page unload
+window.addEventListener('beforeunload', () => {
+  cleanupPaulJobWidget()
+})
 ```
 
 
@@ -590,18 +608,24 @@ const currentUser = {
 
 #### Widget Methods
 
-- `HyrdWidget({ company: 'slug' })`: Initialize widget
-- `HyrdWidget({ method: 'loaded', callback: function })`: Handle loaded event
-- `HyrdWidgetManager.verifyToken(token)`: Verify JWT token
-- `HyrdWidgetManager.clearToken()`: Clear stored authentication token (logout)
+- `HyrdWidget.startWidget(config)`: Start widget with configuration
+- `HyrdWidget.verifyToken(token)`: Verify JWT token
+- `HyrdWidget.clearToken()`: Clear stored authentication token (logout)
+- `HyrdWidget.destroy()`: Destroy widget instance and cleanup
+
+#### Configuration Options
+
+- `company`: Your company slug from dashboard
+- `onStartAutologin`: Callback function triggered when widget needs authentication
 
 #### Functions
 
 - `loadPaulJobWidget()`: Initialize and load the widget
-- `loadPaulJobScript()`: Load the widget SDK script
+- `loadPaulJobScript()`: Load the widget SDK script (returns Promise)
 - `initializePaulJob()`: Initialize widget configuration
 - `authenticateUserWithPaulJob()`: Handle user authentication
 - `logoutFromPaulJob()`: Clear user authentication and logout
+- `cleanupPaulJobWidget()`: Complete widget cleanup (clear token + destroy)
 
 ## Support
 
