@@ -29,8 +29,8 @@ app.post('/hr-token', async (req, res) => {
     const expiresIn = 60 * 60 * 24 * 30 * 2; // 2 months
 
     const claims = {
-      iss: 'https://integration.app.paulsjob.ai',
-      aud: 'paul-job',
+      iss: 'https://app.paulsjob.ai',
+      aud: 'paul-job-update',
       sub: userId,
       email,
       firstName,
@@ -39,34 +39,35 @@ app.post('/hr-token', async (req, res) => {
       iat: now,
       nbf: now,
       jti,
-    };
+    }
+  
 
     const privateKeyRaw = `-----BEGIN RSA PRIVATE KEY-----
-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
+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
 -----END RSA PRIVATE KEY-----`;
 
     if (!privateKeyRaw) {
@@ -78,7 +79,7 @@ oxPIJZZ6UAXxIRs7IX+/QoOlcFMIqtUGUnct5ICD6Kdx4gmdnwat5a1izfmw1keo
     // JWT signing options
     const signOptions = {
       algorithm: 'RS256',
-      keyid: '20250606-d92b',
+      keyid: '20250610-86d0',
     };
 
     let token;
