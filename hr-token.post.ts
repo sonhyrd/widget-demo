@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
 
   const claims = {
     iss: 'https://app.paulsjob.ai',
-    aud: 'paul-job',
+    aud: 'paul-job-update',
     sub: userId,
     email,
     firstName,
